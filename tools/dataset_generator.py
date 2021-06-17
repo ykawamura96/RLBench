@@ -6,6 +6,9 @@ from rlbench import ObservationConfig
 from rlbench.action_modes import ActionMode
 from rlbench.backend.utils import task_file_to_task_class
 from rlbench.environment import Environment
+from rlbench import DomainRandomizationEnvironment
+from rlbench import RandomizeEvery
+from rlbench import VisualRandomizationConfig
 import rlbench.backend.task as task
 
 import os
@@ -36,6 +39,12 @@ flags.DEFINE_integer('episodes_per_task', 10,
                      'The number of episodes to collect per task.')
 flags.DEFINE_integer('variations', -1,
                      'Number of variations to collect per task. -1 for all.')
+flags.DEFINE_bool('randomize_texture' ,
+                   False,
+                  'Set this flag to randomize domain')
+flags.DEFINE_enum('depth_image_type', 'rgb', ['rgb', 'gray'],
+                  'How the depth image is saved in image.')
+
 
 
 def check_and_make(dir):
@@ -87,29 +96,36 @@ def save_demo(demo, example_path):
     check_and_make(front_depth_path)
     check_and_make(front_mask_path)
 
+    if FLAGS.depth_image_type == 'rgb':
+        depth_conversion_fn = utils.float_array_to_rgb_image
+        scale_factor = DEPTH_SCALE
+    elif FLAGS.depth_image_type  == 'gray':
+        depth_conversion_fn = utils.float_array_to_grayscale_image
+        scale_factor = utils.DEFAULT_GRAY_SCALE_FACTOR[np.uint8]
+
     for i, obs in enumerate(demo):
         left_shoulder_rgb = Image.fromarray(obs.left_shoulder_rgb)
-        left_shoulder_depth = utils.float_array_to_rgb_image(
-            obs.left_shoulder_depth, scale_factor=DEPTH_SCALE)
+        left_shoulder_depth = depth_conversion_fn(
+            obs.left_shoulder_depth, scale_factor=scale_factor)
         left_shoulder_mask = Image.fromarray(
             (obs.left_shoulder_mask * 255).astype(np.uint8))
         right_shoulder_rgb = Image.fromarray(obs.right_shoulder_rgb)
-        right_shoulder_depth = utils.float_array_to_rgb_image(
-            obs.right_shoulder_depth, scale_factor=DEPTH_SCALE)
+        right_shoulder_depth = depth_conversion_fn(
+            obs.right_shoulder_depth, scale_factor=scale_factor)
         right_shoulder_mask = Image.fromarray(
             (obs.right_shoulder_mask * 255).astype(np.uint8))
         overhead_rgb = Image.fromarray(obs.overhead_rgb)
-        overhead_depth = utils.float_array_to_rgb_image(
-            obs.overhead_depth, scale_factor=DEPTH_SCALE)
+        overhead_depth = depth_conversion_fn(
+            obs.overhead_depth, scale_factor=scale_factor)
         overhead_mask = Image.fromarray(
             (obs.overhead_mask * 255).astype(np.uint8))
         wrist_rgb = Image.fromarray(obs.wrist_rgb)
-        wrist_depth = utils.float_array_to_rgb_image(
-            obs.wrist_depth, scale_factor=DEPTH_SCALE)
+        wrist_depth = depth_conversion_fn(
+            obs.wrist_depth, scale_factor=scale_factor)
         wrist_mask = Image.fromarray((obs.wrist_mask * 255).astype(np.uint8))
         front_rgb = Image.fromarray(obs.front_rgb)
-        front_depth = utils.float_array_to_rgb_image(
-            obs.front_depth, scale_factor=DEPTH_SCALE)
+        front_depth = depth_conversion_fn(
+            obs.front_depth, scale_factor=scale_factor)
         front_mask = Image.fromarray((obs.front_mask * 255).astype(np.uint8))
 
         left_shoulder_rgb.save(
@@ -176,6 +192,7 @@ def run(i, lock, task_index, variation_count, results, file_lock, tasks):
 
     obs_config = ObservationConfig()
     obs_config.set_all(True)
+
     obs_config.right_shoulder_camera.image_size = img_size
     obs_config.left_shoulder_camera.image_size = img_size
     obs_config.overhead_camera.image_size = img_size
@@ -202,11 +219,18 @@ def run(i, lock, task_index, variation_count, results, file_lock, tasks):
         obs_config.overhead_camera.render_mode = RenderMode.OPENGL
         obs_config.wrist_camera.render_mode = RenderMode.OPENGL
         obs_config.front_camera.render_mode = RenderMode.OPENGL
-
-    rlbench_env = Environment(
-        action_mode=ActionMode(),
-        obs_config=obs_config,
-        headless=True)
+    if FLAGS.randomize_texture:
+        rand_config = VisualRandomizationConfig(
+        image_directory='/home/ykawamura/python3.6/src/RLBench/tests/unit/assets/textures')
+        rlbench_env =  DomainRandomizationEnvironment(
+            ActionMode(), obs_config=obs_config, headless=True,
+            randomize_every=RandomizeEvery.EPISODE, frequency=1,
+            visual_randomization_config=rand_config)
+    else:
+        rlbench_env = Environment(
+            action_mode=ActionMode(),
+            obs_config=obs_config,
+            headless=True)
     rlbench_env.launch()
 
     task_env = None
