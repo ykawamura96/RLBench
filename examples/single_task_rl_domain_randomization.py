@@ -1,11 +1,9 @@
-from rlbench import DomainRandomizationEnvironment
-from rlbench import RandomizeEvery
-from rlbench import VisualRandomizationConfig
-from rlbench import ArmActionMode
-from rlbench import ObservationConfig
-from rlbench.action_modes import ActionMode
-from rlbench.tasks import ReachTarget
 import numpy as np
+from rlbench import (ArmActionMode, DomainRandomizationEnvironment,
+                     ObservationConfig, RandomizeEvery)
+from rlbench.action_modes import ActionMode
+from rlbench.sim2real.domain_randomization import DynamicsRandomizationConfig, VisualRandomizationConfig
+from rlbench.tasks import ReachTarget
 
 
 class Agent(object):
@@ -25,12 +23,15 @@ obs_config.set_all(True)
 # We will borrow some from the tests dir
 rand_config = VisualRandomizationConfig(
     image_directory='../tests/unit/assets/textures')
-
+dynamic_randomization_config = DynamicsRandomizationConfig(
+    randomize_table_heigt=True,
+)
 action_mode = ActionMode(ArmActionMode.ABS_JOINT_VELOCITY)
 env = DomainRandomizationEnvironment(
     action_mode, obs_config=obs_config, headless=False,
     randomize_every=RandomizeEvery.EPISODE, frequency=1,
-    visual_randomization_config=rand_config
+    visual_randomization_config=rand_config,
+    dynamics_randomization_config=dynamic_randomization_config
 )
 env.launch()
 

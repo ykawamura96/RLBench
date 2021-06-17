@@ -1,3 +1,4 @@
+import numpy as np
 from typing import List
 from pyrep import PyRep
 from pyrep.const import ObjectType, TextureMappingMode
@@ -34,10 +35,10 @@ class DomainRandomizationScene(Scene):
         self._previous_index = -1
         self._count = 0
 
-        if self._dynamics_rand_config is not None:
-            raise NotImplementedError(
-                'Dynamics randomization coming soon! '
-                'Only visual randomization available.')
+        # if self._dynamics_rand_config is not None:
+        #     raise NotImplementedError(
+        #         'Dynamics randomization coming soon! '
+        #         'Only visual randomization available.')
 
         self._scene_objects = [Shape(name) for name in SCENE_OBJECTS]
         self._scene_objects += self._robot.arm.get_visuals()
@@ -60,6 +61,7 @@ class DomainRandomizationScene(Scene):
         tree = self._active_task.get_base().get_objects_in_tree(
             ObjectType.SHAPE)
         tree = [Shape(obj.get_handle()) for obj in tree + self._scene_objects]
+
         if self._visual_rand_config is not None:
             files = self._visual_rand_config.sample(len(tree))
             for file, obj in zip(files, tree):
@@ -73,6 +75,12 @@ class DomainRandomizationScene(Scene):
                             o.set_texture(texture, **TEX_KWARGS)
                         self._pyrep.group_objects(ungrouped)
                     text_ob.remove()
+        # randomize table height
+        if self._dynamics_rand_config.randomize_table_height:
+            table = Shape('diningTable')
+            table_vis = Shape('diningTable_visible')
+            table.set_position(table.get_position() + np.array([0, 0, 0.1]))
+            table_vis.set_position(table.get_position() +  np.array([0, 0, 0.1]))
 
     def init_task(self) -> None:
         super().init_task()
