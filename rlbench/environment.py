@@ -3,10 +3,13 @@ from pyrep.robots.arms.panda import Panda
 from pyrep.robots.arms.jaco import Jaco
 from pyrep.robots.arms.mico import Mico
 from pyrep.robots.arms.sawyer import Sawyer
+from pyrep.robots.arms.ur10 import UR10
+
 from pyrep.robots.end_effectors.panda_gripper import PandaGripper
 from pyrep.robots.end_effectors.jaco_gripper import JacoGripper
 from pyrep.robots.end_effectors.mico_gripper import MicoGripper
 from pyrep.robots.end_effectors.baxter_gripper import BaxterGripper
+from pyrep.robots.end_effectors.baxter_suction_cup import BaxterSuctionCup
 
 from rlbench import utils
 from rlbench.demo import Demo
@@ -37,6 +40,7 @@ SUPPORTED_ROBOTS = {
     'jaco': (Jaco, JacoGripper, 6),
     'mico': (Mico, MicoGripper, 6),
     'sawyer': (Sawyer, BaxterGripper, 7),
+    'UR10_suction': (UR10, BaxterSuctionCup, 6)
 }
 
 

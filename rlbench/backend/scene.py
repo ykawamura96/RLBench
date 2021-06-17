@@ -301,7 +301,10 @@ class Scene(object):
 
                 point.start_of_path()
                 try:
-                    path = point.get_path()
+                    if 'Suction' in self._robot.gripper.get_name():
+                        path = point.get_path(ignore_collisions=True)
+                    else:
+                        path = point.get_path()
                 except ConfigurationPathError as e:
                     raise DemoError(
                         'Could not get a path for waypoint %d.' % i,
