@@ -28,7 +28,7 @@ obs_config.set_all(True)
 action_mode = ActionMode(ArmActionMode.ABS_JOINT_VELOCITY)
 env = Environment(
     action_mode, DATASET, obs_config, False,
-    robot_configuration='UR10_suction')
+    robot_configuration='ur10_suction')
 env.launch()
 # task = env.get_task(ReachTarget)
 task = env.get_task(PickUpCup)

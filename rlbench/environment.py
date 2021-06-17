@@ -45,7 +45,7 @@ SUPPORTED_ROBOTS = {
     'jaco': (Jaco, JacoGripper, 6),
     'mico': (Mico, MicoGripper, 6),
     'sawyer': (Sawyer, BaxterGripper, 7),
-    'UR10_suction': (UR10, BaxterSuctionCup, 6),
+    'ur10_suction': (UR10, BaxterSuctionCup, 6),
     'ur5': (UR5, Robotiq85Gripper, 6),
 }
 
@@ -139,7 +139,6 @@ class Environment(object):
             raise RuntimeError('Already called launch!')
         self._pyrep = PyRep()
         self._pyrep.launch(join(DIR_PATH, TTT_FILE), headless=self._headless)
-
         arm_class, gripper_class, _ = SUPPORTED_ROBOTS[
             self._robot_configuration]
 
