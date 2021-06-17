@@ -31,7 +31,7 @@ env = Environment(
     robot_configuration='ur10_suction')
 env.launch()
 # task = env.get_task(ReachTarget)
-task = env.get_task(PickUpCup)
+task = env.get_task(PickAndLift)
 # il = ImitationLearning()
 
 demos = task.get_demos(2, live_demos=live_demos)  # -> List[List[Observation]]

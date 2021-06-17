@@ -26,8 +26,8 @@ class PickAndLift(Task):
         ])
         self.register_success_conditions([cond_set])
 
-    def init_episode(self, index: int) -> List[str]:
-
+    def init_episode(self, index: int=4) -> List[str]:
+        index = 4  # temporaty its alywas blue
         block_color_name, block_rgb = colors[index]
         self.target_block.set_color(block_rgb)
 
@@ -39,9 +39,10 @@ class PickAndLift(Task):
             ob.set_color(rgb)
 
         self.boundary.clear()
-        self.boundary.sample(
-            self.success_detector, min_rotation=(0.0, 0.0, 0.0),
-            max_rotation=(0.0, 0.0, 0.0))
+        # position of sucess pose is fixed temporary
+        # self.boundary.sample(
+        #     self.success_detector, min_rotation=(-90.0, 0.0, 0.0),
+        #     max_rotation=(90.0, 0.0, 0.0))
         for block in [self.target_block] + self.distractors:
             self.boundary.sample(block, min_distance=0.1)
 
