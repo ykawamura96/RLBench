@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import List
+from typing import List, Tuple
 import numpy as np
 import os
 import glob
@@ -56,11 +56,13 @@ class RandomizationConfig(object):
 class DynamicsRandomizationConfig(RandomizationConfig):
 
     def __init__(self,
-                 randomize_table_heigt:  bool = True,
+                 randomize_table_heigt: bool = True,
+                 table_height_range: Tuple = (-0.1, 0.1),
                  whitelist: List[str] = None,
                  blacklist: List[str] = None):
         super().__init__(whitelist, blacklist)
         self.randomize_table_height = randomize_table_heigt
+        self.table_randomize_range = table_height_range
 
 
 class VisualRandomizationConfig(RandomizationConfig):

@@ -1,3 +1,4 @@
+from rlbench.tasks.hang_frame_on_hanger import HangFrameOnHanger
 import numpy as np
 from typing import List
 from pyrep import PyRep
@@ -35,14 +36,12 @@ class DomainRandomizationScene(Scene):
         self._previous_index = -1
         self._count = 0
 
-        # if self._dynamics_rand_config is not None:
-        #     raise NotImplementedError(
-        #         'Dynamics randomization coming soon! '
-        #         'Only visual randomization available.')
-
         self._scene_objects = [Shape(name) for name in SCENE_OBJECTS]
         self._scene_objects += self._robot.arm.get_visuals()
-        self._scene_objects += self._robot.gripper.get_visuals()
+        try:
+            self._scene_objects += self._robot.gripper.get_visuals()
+        except AttributeError as e:
+            pass
         if self._visual_rand_config is not None:
             # Make the floor plane renderable (to cover old floor)
             self._scene_objects[0].set_renderable(True)
@@ -61,7 +60,7 @@ class DomainRandomizationScene(Scene):
         tree = self._active_task.get_base().get_objects_in_tree(
             ObjectType.SHAPE)
         tree = [Shape(obj.get_handle()) for obj in tree + self._scene_objects]
-
+        # randomize visuals
         if self._visual_rand_config is not None:
             files = self._visual_rand_config.sample(len(tree))
             for file, obj in zip(files, tree):
@@ -77,10 +76,12 @@ class DomainRandomizationScene(Scene):
                     text_ob.remove()
         # randomize table height
         if self._dynamics_rand_config.randomize_table_height:
-            table = Shape('diningTable')
+            move_min, move_max = self._dynamics_rand_config.table_randomize_range
+            shift = np.random.uniform(low=move_min, high=move_max)
             table_vis = Shape('diningTable_visible')
-            table.set_position(table.get_position() + np.array([0, 0, 0.1]))
-            table_vis.set_position(table.get_position() +  np.array([0, 0, 0.1]))
+            table_vis.set_position(table_vis.get_position() + np.array([0, 0, shift]))
+            table = Shape('diningTable')
+            table.set_position(table.get_position() + np.array([0, 0, shift]))
 
     def init_task(self) -> None:
         super().init_task()
