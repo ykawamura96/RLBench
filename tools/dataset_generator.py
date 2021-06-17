@@ -8,7 +8,7 @@ from rlbench.backend.utils import task_file_to_task_class
 from rlbench.environment import Environment
 from rlbench import DomainRandomizationEnvironment
 from rlbench import RandomizeEvery
-from rlbench import VisualRandomizationConfig
+from rlbench.sim2real.domain_randomization import VisualRandomizationConfig, DynamicsRandomizationConfig
 import rlbench.backend.task as task
 
 import os
@@ -42,6 +42,9 @@ flags.DEFINE_integer('variations', -1,
 flags.DEFINE_bool('randomize_texture' ,
                    False,
                   'Set this flag to randomize domain')
+flags.DEFINE_string('robot_configuration',
+                    'panda',
+                    'Speficy which robot to to get demonstration')
 flags.DEFINE_enum('depth_image_type', 'rgb', ['rgb', 'gray'],
                   'How the depth image is saved in image.')
 
@@ -221,15 +224,23 @@ def run(i, lock, task_index, variation_count, results, file_lock, tasks):
         obs_config.front_camera.render_mode = RenderMode.OPENGL
     if FLAGS.randomize_texture:
         rand_config = VisualRandomizationConfig(
-        image_directory='/home/ykawamura/python3.6/src/RLBench/tests/unit/assets/textures')
-        rlbench_env =  DomainRandomizationEnvironment(
-            ActionMode(), obs_config=obs_config, headless=True,
+            image_directory='../tests/unit/assets/textures')
+        dynamic_randomization_config = DynamicsRandomizationConfig(
+            randomize_table_heigt=True,
+            table_height_range=(-0.05, 0.05)
+        )
+        rlbench_env = Environment(
+            action_mode=ActionMode(), obs_config=obs_config,
             randomize_every=RandomizeEvery.EPISODE, frequency=1,
-            visual_randomization_config=rand_config)
+            robot_configuration=FLAGS.robot_configuration,
+            visual_randomization_config=rand_config,
+            dynamics_randomization_config=dynamic_randomization_config,
+            headless=True)
     else:
         rlbench_env = Environment(
             action_mode=ActionMode(),
             obs_config=obs_config,
+            robot_configuration=FLAGS.robot_configuration,
             headless=True)
     rlbench_env.launch()
 
@@ -266,10 +277,12 @@ def run(i, lock, task_index, variation_count, results, file_lock, tasks):
         task_env = rlbench_env.get_task(t)
         task_env.set_variation(my_variation_count)
         obs, descriptions = task_env.reset()
-
+        variation_name = VARIATIONS_FOLDER % my_variation_count
+        if FLAGS.randomize_texture:
+            variation_name += '_domain_randomzation'
         variation_path = os.path.join(
             FLAGS.save_path, task_env.get_name(),
-            VARIATIONS_FOLDER % my_variation_count)
+            variation_name)
 
         check_and_make(variation_path)
 
