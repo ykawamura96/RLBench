@@ -117,3 +117,6 @@ dmypy.json
 .pyre/
 
 index.html
+
+# sandbox
+sandbox
