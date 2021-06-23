@@ -311,7 +311,8 @@ class Scene(object):
 
     def get_demo(self, record: bool = True,
                  callable_each_step: Callable[[Observation], None] = None,
-                 randomly_place: bool = True) -> Demo:
+                 randomly_place: bool = True,
+                 random_force: float = 0) -> Demo:
         """Returns a demo (list of observations)"""
 
         if not self._has_init_task:
@@ -360,6 +361,11 @@ class Scene(object):
                 while not done:
                     done = path.step()
                     self.step()
+                    if random_force != 0.0:
+                        for shape in self._robot_shapes:
+                            random_force_vec = np.random.normal(loc=0.0, scale=random_force, size=(3))
+                            shape.add_force(position=np.array([0, 0, 0]),
+                                            force=random_force_vec)
                     self._demo_record_step(demo, record, callable_each_step)
                     success, term = self._active_task.success()
 
@@ -402,6 +408,11 @@ class Scene(object):
                         num = float(rest[:rest.index(')')])
                         done = False
                         while not done:
+                            if random_force != 0.0:
+                                for shape in self._robot_shapes:
+                                    random_force_vec = np.random.normal(loc=0.0, scale=random_force, size=(3))
+                                    shape.add_force(position=np.array([0, 0, 0]),
+                                                    force=random_force_vec)
                             done = gripper.actuate(num, 0.04)
                             self._pyrep.step()
                             self._active_task.step()

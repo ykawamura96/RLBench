@@ -47,7 +47,9 @@ flags.DEFINE_string('robot_configuration',
                     'Speficy which robot to to get demonstration')
 flags.DEFINE_enum('depth_image_type', 'rgb', ['rgb', 'gray'],
                   'How the depth image is saved in image.')
-
+flags.DEFINE_float('random_force', 0.0,
+                   'Apply random force to each robot links while performing demonstration. '
+                   )
 
 
 def check_and_make(dir):
@@ -242,6 +244,7 @@ def run(i, lock, task_index, variation_count, results, file_lock, tasks):
             obs_config=obs_config,
             robot_configuration=FLAGS.robot_configuration,
             headless=True)
+
     rlbench_env.launch()
 
     task_env = None
@@ -303,7 +306,8 @@ def run(i, lock, task_index, variation_count, results, file_lock, tasks):
                     # TODO: for now we do the explicit looping.
                     demo, = task_env.get_demos(
                         amount=1,
-                        live_demos=True)
+                        live_demos=True,
+                        random_force=FLAGS.random_force)
                 except Exception as e:
                     attempts -= 1
                     if attempts > 0:
