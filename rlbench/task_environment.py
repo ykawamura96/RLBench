@@ -5,6 +5,7 @@ import numpy as np
 from pyquaternion import Quaternion
 from pyrep import PyRep
 from pyrep.const import ObjectType, ConfigurationPathAlgorithms
+from pyrep.robots.end_effectors.suction_cup import SuctionCup
 from pyrep.errors import IKError
 from pyrep.objects import Dummy
 
@@ -349,22 +350,31 @@ class TaskEnvironment(object):
 
         if current_ee != ee_action:
             done = False
-            if ee_action == 0.0 and self._attach_grasped_objects:
-                # If gripper close action, the check for grasp.
-                for g_obj in self._task.get_graspable_objects():
-                    self._robot.gripper.grasp(g_obj)
+            if issubclass(type(self._robot.gripper), SuctionCup):
+                # suction gripper calse
+                if ee_action == 1.0:  # grasp object
+                    for g_obj in self._task.get_graspable_objects():
+                        self._robot.gripper.grasp(g_obj)
+                else:
+                    # If gripper open action, the check for ungrasp.
+                    self._robot.gripper.release()
             else:
-                # If gripper open action, the check for ungrasp.
-                self._robot.gripper.release()
-            while not done:
-                done = self._robot.gripper.actuate(ee_action, velocity=0.2)
-                self._pyrep.step()
-                self._task.step()
-            if ee_action == 1.0:
-                # Step a few more times to allow objects to drop
-                for _ in range(10):
+                if ee_action == 0.0 and self._attach_grasped_objects:
+                    # If gripper close action, the check for grasp.
+                    for g_obj in self._task.get_graspable_objects():
+                        self._robot.gripper.grasp(g_obj)
+                else:
+                    # If gripper open action, the check for ungrasp.
+                    self._robot.gripper.release()
+                while not done:
+                    done = self._robot.gripper.actuate(ee_action, velocity=0.2)
                     self._pyrep.step()
                     self._task.step()
+                if ee_action == 1.0:
+                    # Step a few more times to allow objects to drop
+                    for _ in range(10):
+                        self._pyrep.step()
+                        self._task.step()
 
         success, terminate = self._task.success()
         task_reward = self._task.reward()
