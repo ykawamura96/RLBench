@@ -1,7 +1,7 @@
 from rlbench.environment import Environment
 from rlbench.action_modes import ArmActionMode, ActionMode
 from rlbench.observation_config import ObservationConfig
-from rlbench.tasks import ReachTarget
+from rlbench.tasks import CloseBox
 import numpy as np
 
 
@@ -23,14 +23,15 @@ obs_config.set_all(True)
 
 action_mode = ActionMode(ArmActionMode.ABS_JOINT_VELOCITY)
 env = Environment(
-    action_mode, DATASET, obs_config, False)
+    action_mode, DATASET, obs_config, True)
 env.launch()
 
-task = env.get_task(ReachTarget)
+task = env.get_task(CloseBox)
 
 il = ImitationLearning()
 
 demos = task.get_demos(2, live_demos=live_demos)  # -> List[List[Observation]]
+print(len(demos))
 demos = np.array(demos).flatten()
 
 # An example of using the demos to 'train' using behaviour cloning loss.
