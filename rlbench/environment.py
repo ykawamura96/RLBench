@@ -47,6 +47,7 @@ SUPPORTED_ROBOTS = {
     'sawyer': (Sawyer, BaxterGripper, 7),
     'ur10_suction': (UR10, BaxterSuctionCup, 6),
     'ur10_epick': (UR10, BaxterSuctionCup, 6),
+    'ur5_epick': (UR5, BaxterSuctionCup, 6),
     'ur5': (UR5, Robotiq85Gripper, 6),
 }
 
