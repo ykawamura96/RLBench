@@ -229,7 +229,7 @@ def run(i, lock, task_index, variation_count, results, file_lock, tasks):
             image_directory='../tests/unit/assets/textures')
         dynamic_randomization_config = DynamicsRandomizationConfig(
             randomize_table_heigt=True,
-            table_height_range=(-0.05, 0.05)
+            # table_height_range=(-0.05, 0.05)
         )
         rlbench_env = Environment(
             action_mode=ActionMode(), obs_config=obs_config,
